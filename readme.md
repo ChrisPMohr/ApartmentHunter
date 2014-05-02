@@ -2,11 +2,11 @@ ApartmentHunter provides a way to load recent apartment listings from craigslist
 
 Features extracted include:
 * Price
+* Address
 * Available date
 * Phone number
 
 Future features to be extracted include:
 * Number of bedrooms
-* Address
 * Email address
 * Presence of pictures

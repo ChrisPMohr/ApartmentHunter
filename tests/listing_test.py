@@ -105,5 +105,26 @@ class ExtractTelephoneNumbers(unittest.TestCase):
         self.assertIsNone(telephone_numbers)
 
 
+class ExtractAddress(unittest.TestCase):
+    def setUp(self):
+        self.link_html = None
+        self.page_html = Mock()
+        self.unhidden_page_html = None
+
+    def test_extract_address(self):
+        tag_mock = Mock()
+        tag_mock.string = "123 Main Street"
+        self.page_html.find = Mock(return_value=tag_mock)
+        address = listing.extract_address(
+            self.link_html, self.page_html, self.unhidden_page_html)
+        self.assertEqual(address, "123 Main Street")
+
+    def test_no_address(self):
+        self.page_html.find = Mock(return_value=None)
+        address = listing.extract_address(
+            self.link_html, self.page_html, self.unhidden_page_html)
+        self.assertIsNone(address)
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -6,7 +6,7 @@ import re
 
 class Listing(object):
 
-    """Represents a Listing"""
+    """Represents an apartment listing and contains all html about it"""
 
     def __init__(self, listing_url, link_html, page_html,
                  unhidden_page_html):
@@ -32,6 +32,11 @@ class Listing(object):
             link_html, page_html, unhidden_page_html)
         self.set_feature_if_not_none('telephone', telephone)
 
+        address = extract_address(
+            link_html, page_html, unhidden_page_html)
+        self.set_feature_if_not_none('address', address)
+
+
 def extract_price(link_html, page_html, unhidden_page_html):
     """Extracts the price from the link or page"""
     price_string = None
@@ -54,6 +59,7 @@ def extract_price(link_html, page_html, unhidden_page_html):
             return int(price_string)
         except ValueError:
             pass
+
 
 def extract_available_month(link_html, page_html, unhidden_page_html):
     """Tries to extract move in date from the link or page
@@ -87,6 +93,7 @@ def extract_available_month(link_html, page_html, unhidden_page_html):
         if month >= 1 and month <= 12:
             return month
 
+
 def extract_telephone_numbers(link_html, page_html, unhidden_page_html):
     """Tries to extract strings that look like a telephone number"""
     telephone_regex = '\(?([0-9]{3})\)?.([0-9]{3}).([0-9]{4})'
@@ -102,3 +109,12 @@ def extract_telephone_numbers(link_html, page_html, unhidden_page_html):
             telephone_numbers.append(telephone_number)
     if telephone_numbers:
         return telephone_numbers
+
+
+def extract_address(link_html, page_html, unhidden_page_html):
+    """Tries to extract address
+       Finding addresses in text is challenging, so we just look for
+       the address field that shows up on some listings"""
+    address_tag = page_html.find('div', class_='mapaddress')
+    if address_tag:
+        return address_tag.string
