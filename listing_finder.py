@@ -27,7 +27,14 @@ class ListingFinder(object):
             listing_record = self.collection.find_one({'url': link_url})
             if not listing_record:
                 page_html = get_page_html(link_url)
-                listing = Listing(link_url, link_tag, page_html)
+                contact_info_url = get_contact_info_url(page_html)
+                if contact_info_url:
+                    full_contact_info_url = self.base_url + contact_info_url
+                    unhidden_page_html = get_page_html(full_contact_info_url)
+                else:
+                    unhidden_page_html = None
+                listing = Listing(link_url, link_tag, page_html,
+                                  unhidden_page_html)
                 print(listing.features)
                 self.collection.insert(listing.features)
                 currently_retrieved += 1
@@ -40,11 +47,19 @@ def get_link_url(link_tag):
     if link:
         return link.get('href')
 
+
 def get_page_html(link_url):
     response = requests.get(link_url)
     # Simple rate limiting to prevent too many requests
     sleep(5)
     return BeautifulSoup(response.text)
+
+
+def get_contact_info_url(page_html):
+    show_contact_link = page_html.find('a', class_='showcontact')
+    if show_contact_link:
+        return show_contact_link.get('href')
+        
 
 if __name__ == "__main__":
     city_name = 'Pittsburgh'

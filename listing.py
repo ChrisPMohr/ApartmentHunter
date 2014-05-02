@@ -8,25 +8,31 @@ class Listing(object):
 
     """Represents a Listing"""
 
-    def __init__(self, listing_url, link_html, page_html):
+    def __init__(self, listing_url, link_html, page_html,
+                 unhidden_page_html):
         self.features = dict()
         self.features['url'] = listing_url
-        self.extract_features(link_html, page_html)
+        self.extract_features(link_html, page_html, unhidden_page_html)
 
     def set_feature_if_not_none(self, feature, value):
         if value:
             self.features[feature] = value
 
-    def extract_features(self, link_html, page_html):
+    def extract_features(self, link_html, page_html, unhidden_page_html):
         """Calls each extractor on the listing"""
-        price = extract_price(link_html, page_html)
+        price = extract_price(
+            link_html, page_html, unhidden_page_html)
         self.set_feature_if_not_none('price', price)
 
-        date = extract_available_month(link_html, page_html)
+        date = extract_available_month(
+            link_html, page_html, unhidden_page_html)
         self.set_feature_if_not_none('available month', date)
 
+        telephone = extract_telephone_numbers(
+            link_html, page_html, unhidden_page_html)
+        self.set_feature_if_not_none('telephone', telephone)
 
-def extract_price(link_html, page_html):
+def extract_price(link_html, page_html, unhidden_page_html):
     """Extracts the price from the link or page"""
     price_string = None
 
@@ -49,7 +55,7 @@ def extract_price(link_html, page_html):
         except ValueError:
             pass
 
-def extract_available_month(link_html, page_html):
+def extract_available_month(link_html, page_html, unhidden_page_html):
     """Tries to extract move in date from the link or page
        This method may give some false matches as month names, especially
        "may", may appear in listings when not refering to the month"""
@@ -67,7 +73,6 @@ def extract_available_month(link_html, page_html):
 
     match = re.search(long_month_regex, listing_text, re.IGNORECASE)
     if match:
-        print(listing_text.encode('utf-8'))
         return long_month_list.index(match.group(0).lower()) + 1
     
     match = re.search(short_month_regex, listing_text, re.IGNORECASE)
@@ -75,7 +80,25 @@ def extract_available_month(link_html, page_html):
         return short_month_list.index(match.group(0).lower()) + 1
 
     # Look for dates in month/day/year format
-    date_regex = '([0-9]{1,2})/[0-9]{1,2}/[0-9]{2,4}'
+    date_regex = '([0-9]{1,2}).[0-9]{1,2}.[0-9]{2,4}'
     match = re.search(date_regex, listing_text)
     if match:
-        return int(match.group(1))
+        month = int(match.group(1))
+        if month >= 1 and month <= 12:
+            return month
+
+def extract_telephone_numbers(link_html, page_html, unhidden_page_html):
+    """Tries to extract strings that look like a telephone number"""
+    telephone_regex = '\(?([0-9]{3})\)?.([0-9]{3}).([0-9]{4})'
+    if unhidden_page_html:
+        matches = re.findall(telephone_regex, unhidden_page_html.text)
+    else:
+        matches = re.findall(telephone_regex, page_html.text)
+
+    telephone_numbers = list()
+    for match in matches:
+        telephone_number = ''.join(match)
+        if len(telephone_number) == 10:
+            telephone_numbers.append(telephone_number)
+    if telephone_numbers:
+        return telephone_numbers
