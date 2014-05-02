@@ -22,6 +22,9 @@ class Listing(object):
         price = extract_price(link_html, page_html)
         self.set_feature_if_not_none('price', price)
 
+        date = extract_available_month(link_html, page_html)
+        self.set_feature_if_not_none('available month', date)
+
 
 def extract_price(link_html, page_html):
     """Extracts the price from the link or page"""
@@ -45,3 +48,34 @@ def extract_price(link_html, page_html):
             return int(price_string)
         except ValueError:
             pass
+
+def extract_available_month(link_html, page_html):
+    """Tries to extract move in date from the link or page
+       This method may give some false matches as month names, especially
+       "may", may appear in listings when not refering to the month"""
+    # Search both the title and page for a month
+    listing_text = ''.join([link_html.a.text, page_html.text])
+
+    # Look for long or short month names
+    short_month_list = ["jan", "feb", "mar", "apr", "may", "jun",
+                        "jul", "aug", "sept", "oct", "nov", "dec"]
+    long_month_list = ["january", "february", "march", "april", "may",
+                       "june", "july", "august", "september", "october",
+                       "november", "december"]
+    short_month_regex = '(' + '|'.join(short_month_list) + ')\\b'
+    long_month_regex = '(' + '|'.join(long_month_list) + ')\\b'
+
+    match = re.search(long_month_regex, listing_text, re.IGNORECASE)
+    if match:
+        print(listing_text.encode('utf-8'))
+        return long_month_list.index(match.group(0).lower()) + 1
+    
+    match = re.search(short_month_regex, listing_text, re.IGNORECASE)
+    if match:
+        return short_month_list.index(match.group(0).lower()) + 1
+
+    # Look for dates in month/day/year format
+    date_regex = '([0-9]{1,2})/[0-9]{1,2}/[0-9]{2,4}'
+    match = re.search(date_regex, listing_text)
+    if match:
+        return int(match.group(1))

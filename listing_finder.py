@@ -48,8 +48,8 @@ def get_page_html(link_url):
 
 if __name__ == "__main__":
     city_name = 'Pittsburgh'
-    craigslist_base_url = "http://pittsburgh.craigslist.org/"
-    craigslist_path = "apa/"
+    craigslist_base_url = "http://pittsburgh.craigslist.org"
+    craigslist_path = "/apa/"
 
     listing_finder = ListingFinder(city_name, craigslist_base_url,
                                    craigslist_path)
