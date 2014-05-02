@@ -3,17 +3,18 @@
 
 import requests
 import pymongo
+import argparse
+import re
 from bs4 import BeautifulSoup
 from time import sleep
 
 from listing import Listing
 
 class ListingFinder(object):
-    def __init__(self, city_name, base_url, path):
+    def __init__(self, collection_name, url):
         client = pymongo.MongoClient()
-        self.collection = client.apartments[city_name]
-        self.base_url = base_url
-        self.path = path
+        self.collection = client.apartments[collection_name]
+        self.base_url, self.path = split_url(url)
 
     def get_listings(self, max_to_retrieve):
         response = requests.get(self.base_url + self.path)
@@ -42,6 +43,12 @@ class ListingFinder(object):
                     break
 
 
+def split_url(url):
+    """Split craigslist url into domain name and path"""
+    match = re.match("(.*\.org)(/.*)", url)
+    return match.group(1), match.group(2)
+
+
 def get_link_url(link_tag):
     link = link_tag.find('a')
     if link:
@@ -62,10 +69,15 @@ def get_contact_info_url(page_html):
         
 
 if __name__ == "__main__":
-    city_name = 'Pittsburgh'
-    craigslist_base_url = "http://pittsburgh.craigslist.org"
-    craigslist_path = "/apa/"
-
-    listing_finder = ListingFinder(city_name, craigslist_base_url,
-                                   craigslist_path)
-    listing_finder.get_listings(2)
+    parser = argparse.ArgumentParser(
+        'Search a craigslist apartment site for a number of listings')
+    parser.add_argument('--name', required=true,
+                        help='Name of collection to store results in')
+    parser.add_argument('--url', required=true,
+                        help='URL for craigslist site being searched')
+    parser.add_argument('-n', required=true, 
+                        help='Number of results to retrieve')
+    
+    args = parser.parse_args()
+    listing_finder = ListingFinder(args.name, args.url)
+    listing_finder.get_listings(args.n)
