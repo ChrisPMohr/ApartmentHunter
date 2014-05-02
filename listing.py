@@ -8,8 +8,9 @@ class Listing(object):
 
     """Represents a Listing"""
 
-    def __init__(self, link_html, page_html):
+    def __init__(self, listing_url, link_html, page_html):
         self.features = dict()
+        self.features['url'] = listing_url
         self.extract_features(link_html, page_html)
 
     def set_feature_if_not_none(self, feature, value):
@@ -44,4 +45,3 @@ def extract_price(link_html, page_html):
             return int(price_string)
         except ValueError:
             pass
-

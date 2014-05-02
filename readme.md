@@ -1,4 +1,4 @@
-ApartmentHunter provides a way to load recent apartment listings from craigslist.org. Features are extracted from each listing. These will be saved into a MongoDB database to allow for executing queries on the listings.
+ApartmentHunter provides a way to load recent apartment listings from craigslist.org. Features are extracted from each listing. These features are stored in a MongoDB database which allows for executing queries on the listings.
 
 Features extracted include:
 * Price
