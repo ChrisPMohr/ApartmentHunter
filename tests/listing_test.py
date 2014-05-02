@@ -74,7 +74,7 @@ class ExtractAvailableMonthTests(unittest.TestCase):
         self.assertIsNone(available_month)
 
 
-class ExtractTelephoneNumbers(unittest.TestCase):
+class ExtractTelephoneNumbersTests(unittest.TestCase):
     def setUp(self):
         self.link_html = None
         self.page_html = Mock()
@@ -105,7 +105,7 @@ class ExtractTelephoneNumbers(unittest.TestCase):
         self.assertIsNone(telephone_numbers)
 
 
-class ExtractAddress(unittest.TestCase):
+class ExtractAddressTests(unittest.TestCase):
     def setUp(self):
         self.link_html = None
         self.page_html = Mock()
@@ -124,6 +124,29 @@ class ExtractAddress(unittest.TestCase):
         address = listing.extract_address(
             self.link_html, self.page_html, self.unhidden_page_html)
         self.assertIsNone(address)
+
+
+class ExtractNumberBedroomsTests(unittest.TestCase):
+    def setUp(self):
+        self.link_html = Mock()
+        self.page_html = None
+        self.unhidden_page_html = None
+
+    def test_extract_number_bedrooms(self):
+        tag_mock = Mock()
+        tag_mock.text = " / 3br - 730ft2 - "
+        self.link_html.find = Mock(return_value=tag_mock)
+        number_bedrooms = listing.extract_number_bedrooms(
+            self.link_html, self.page_html, self.unhidden_page_html)
+        self.assertEqual(number_bedrooms, 3)
+
+    def test_no_bedrooms(self):
+        tag_mock = Mock()
+        tag_mock.text = ''
+        self.link_html.find = Mock(return_value=tag_mock)
+        number_bedrooms = listing.extract_number_bedrooms(
+            self.link_html, self.page_html, self.unhidden_page_html)
+        self.assertIsNone(number_bedrooms)
 
 
 if __name__ == '__main__':

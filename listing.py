@@ -36,6 +36,10 @@ class Listing(object):
             link_html, page_html, unhidden_page_html)
         self.set_feature_if_not_none('address', address)
 
+        number_bedrooms = extract_number_bedrooms(
+            link_html, page_html, unhidden_page_html)
+        self.set_feature_if_not_none('bedrooms', number_bedrooms)
+
 
 def extract_price(link_html, page_html, unhidden_page_html):
     """Extracts the price from the link or page"""
@@ -108,13 +112,25 @@ def extract_telephone_numbers(link_html, page_html, unhidden_page_html):
         if len(telephone_number) == 10:
             telephone_numbers.append(telephone_number)
     if telephone_numbers:
+    	# remove duplicates
+    	telephone_numbers = list(set(telephone_numbers))
         return telephone_numbers
 
 
 def extract_address(link_html, page_html, unhidden_page_html):
-    """Tries to extract address
-       Finding addresses in text is challenging, so we just look for
-       the address field that shows up on some listings"""
+    """Tries to extract address"""
+    # Finding addresses in text is challenging, so we just look for
+    # the address field that shows up on some listings
     address_tag = page_html.find('div', class_='mapaddress')
     if address_tag:
         return address_tag.string
+
+
+def extract_number_bedrooms(link_html, page_html, unhidden_page_html):
+	"""Tries to extract number of bedrooms"""
+	# This usually shows up in the link to the listing
+	bedroom_tag = link_html.find('span', class_='l2')
+	if bedroom_tag:
+		match = re.search('([0-9])br', bedroom_tag.text)
+		if match:
+			return int(match.group(1))

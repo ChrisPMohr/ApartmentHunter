@@ -28,6 +28,9 @@ class ListingFinder(object):
             listing_record = self.collection.find_one({'url': link_url})
             if not listing_record:
                 page_html = get_page_html(link_url)
+                # Some pages have a button that when clicked, loads a different
+                # version of the body of the page that contains the contact
+                # information, which was hidden in the first version.
                 contact_info_url = get_contact_info_url(page_html)
                 if contact_info_url:
                     full_contact_info_url = self.base_url + contact_info_url
@@ -71,13 +74,13 @@ def get_contact_info_url(page_html):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         'Search a craigslist apartment site for a number of listings')
-    parser.add_argument('--name', required=true,
+    parser.add_argument('--name', required=True,
                         help='Name of collection to store results in')
-    parser.add_argument('--url', required=true,
+    parser.add_argument('--url', required=True,
                         help='URL for craigslist site being searched')
-    parser.add_argument('-n', required=true, 
+    parser.add_argument('-n', required=True, 
                         help='Number of results to retrieve')
     
     args = parser.parse_args()
     listing_finder = ListingFinder(args.name, args.url)
-    listing_finder.get_listings(args.n)
+    listing_finder.get_listings(int(args.n))
